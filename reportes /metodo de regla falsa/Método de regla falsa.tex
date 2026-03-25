@@ -1,0 +1,476 @@
+\documentclass{rmf-d}
+\usepackage{nopageno,multicol,times,epsf,amsmath,amssymb}
+\usepackage[T1]{fontenc} 
+\usepackage[spanish, mexico]{babel}
+\usepackage[]{caption}
+\usepackage{graphicx}
+\usepackage{blindtext}
+\usepackage{color}
+\usepackage[hidelinks]{hyperref}
+\usepackage[backend=biber, natbib=true,style=numeric]{biblatex}
+\usepackage{hhline}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{cancel}
+\usepackage{afterpage}
+\usepackage{amsthm}
+\usepackage{bookmark}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\usepackage{circuitikz}
+\usepackage{physics}
+\usepackage{pgfplots}
+\usepackage{listings}
+
+
+
+
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,1}
+\definecolor{airforceblue}{rgb}{0.36, 0.54, 0.66}
+\definecolor{americanrose}{rgb}{1.0, 0.01, 0.24}
+\definecolor{antiquefuchsia}{rgb}{0.57, 0.36, 0.51}
+\definecolor{amaranth}{rgb}{0.9, 0.17, 0.31}
+\definecolor{brightmaroon}{rgb}{0.76, 0.13, 0.28}
+\definecolor{blue(pigment)}{rgb}{0.2, 0.2, 0.6}
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},   commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breakatwhitespace=false,         
+  breaklines=true,                 
+  captionpos=b,                    
+  keepspaces=true,                 
+  numbers=left,                    
+  numbersep=5pt,                  
+  showspaces=false,                
+  showstringspaces=false,
+  showtabs=false,                  
+  tabsize=2
+}
+
+\lstset{style=mystyle}
+
+
+
+
+
+\renewcommand*\descriptionlabel[1]{\hspace\leftmargin$#1$}
+
+\addbibresource{ref.bib}
+\bibliography{ref}
+
+
+\pgfplotsset{compat=1.17}
+\renewcommand\theadalign{cc}
+\renewcommand\theadfont{}
+\renewcommand\theadgape{\Gape[4pt]}
+\renewcommand\cellgape{\Gape[0pt]}
+\spanishdecimal{.}
+\def\rmfcornisa{Métodos numéricos \hfill Tercer Semestre\
+\hfill Noviembre 2023}
+\newcommand{\ssc}{\scriptscriptstyle}
+\definecolor{LightGray}{gray}{0.9}
+
+
+\def\rmfcintilla{{\it Facultad de Ciencias Físico Matemáticas\/}}
+\clearpage \pagestyle{myheadings}
+\setcounter{page}{1}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{document}
+%\markboth{Universidad Autónoma de Coahuila}
+
+
+
+
+\title{Método de regla falsa
+\vspace{-6pt}}
+\author{Javier Alexander López Contreras }
+
+\address{Facultad de Ciencias Físico Matemáticas (FCFM), Universidad Autónoma de Coahuila, Campus Campo redondo }
+\\
+
+\maketitle
+
+
+
+
+\begin{center}
+\recibido{24 de febrero del 2026
+\vspace{-10pt}}
+\end{center}
+
+
+\begin{abstract}
+En este documento se analizará el método de regla falsa, el cual se usa para aproximar raíces de una función. También se busca el análisis y aplicación del código escrito en el lenguaje de programación Python, mediante el interprete Visual Studio Code. 
+\end{abstract}
+
+
+
+
+
+
+
+
+
+
+
+\begin{multicols}{2}
+
+\section{INTRODUCCIÓN}
+\label{sec:1}
+El método de la \textbf{Regla Falsa} es un algoritmo numérico diseñado para encontrar raíces de funciones no lineales de la forma $f(x) = 0 $. Este método usa un intervalo inicial $[a,b]$ para que cumpla la condición de \textbf{Bolzano} ($f(a) \cdot f(b) < 0$.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{ALGORITMO Y EXPLICACIÓN DEL
+MÉTODO DE REGLA FALSA}
+\label{sec:2}
+El \textbf{método de la regla falsa} es similar al método de bisección, con la diferencia que en lugar de tomar el punto medio, se toma como nuevo valor la intersección con el eje x una linea recta formada por dos puntos del intervalo. Lo importante de este método es que genera aproximaciones y ofrece una prueba para asegurarse que la raíz quede entre dos iteraciones sucesivas.
+
+Este método se usa por su capacidad de encontrar las raíces de una función más rápido que el método de bisección.
+
+Al igual que en bisección se usa un primer intervalo $[a,b]$ y estos tienen que cumplir el teorema de Bolzano. El método  consigue una aproximación mejor usando el punto $(c,0)$ en el que la recta secante pasa por los puntos $(a,f(a))$ y $(b,f(b)$ cruza el eje x.
+
+Para encontrar el valor de c, se realiza el siguiente algoritmo:
+
+\begin{itemize}
+    \item Utilizamos la ecuación de la recta utilizando
+    \begin{equation}
+        y_2-y_1=m(x_2-x_1)
+    \end{equation}
+    \item Tenemos nuestro punto $(a,f(a))$ y $(b,f(b))$ y evaluamos en el despeje de m de la ecuación anterior para obtener la pendiente de la recta.
+\begin{equation}
+    m=\frac{f(b)-f(a)}{b-a}
+\end{equation}
+    \item Hacemos lo mismo para el punto $(b,f(b))$ y $(c,0)$
+    \begin{equation}
+        m=\frac{0-f(b)}{c-b}
+    \end{equation}
+    \item Igualamos ambas pendientes.
+    \begin{equation}
+        \frac{f(b)-f(a)}{b-a}=\frac{0-f(b)}{c-b}
+    \end{equation}
+    \item Despejamos c y así obtenemos su valor.
+    \begin{equation}
+        c=b-\frac{f(b)(b-a)}{f(b)-f(a)}
+    \end{equation}
+\end{itemize}
+
+Si $f(a)$ y $f(c)$ tienen distinto signo, hay un cero en el punto $[a,c]$, si tienen el mismo signo, entonces el cero está en el punto $[c,b]$. Si $f(c)=0$ entonces c es un cero de la función.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{ANÁLISIS DEL CÓDIGO}
+\label{sec:3}
+El código se escribió en el lenguaje \textbf{Python}, el código usa una interfaz gráfica de usuario que facilita la interacción y visualización de los datos.
+
+\subsection{Configuración de la interfaz y entrada de datos}
+Para la captura de la función, se utiliza el objeto \textbf{Entry}. La evalucación se realiza mediante la función \textbf{eval()}, lo que permite que el motor de cálculo interprete funciones complejas importadas de \textbf{Numpy}.
+
+\begin{lstlisting}[language=Python, caption=Configuración de la ventana y captura de función]
+#empezar abriendo la ventana 
+#crear la ventana de tkinter
+ventana = tk.Tk()
+ventana.title('Porgrama para encontrar las raíces de un polinomio mediante el método de regla falsa')
+ventana.geometry("700x700")
+
+#Aqui le pido al usuario que ingrese la función
+
+def f(x):
+    #usar las funciones importadas de numpy arriba
+    return eval(funcion.get())
+
+funcion=tk.Entry(ventana, width=50)
+funcion.pack()
+\end{lstlisting}
+
+\subsection{Visualización gráfica}
+Se implementó una función de graficación utilizando \textbf{Matplotlib}. Esto es vital para que el usuario identifique visualmente el intervalo $[a,b]$ donde existe un cambio de signo, cumpliendo así con el \textbf{Teorema de Bolzano}.
+
+\begin{lstlisting}[language=Python, caption=Rutina de graficación con Matplotlib]
+#Hacer la gráfica de la función
+def grafica():
+    #ajustar el rango de x para ver mejor la funcion
+    x = np.linspace(-10, 10, 400)
+    y = f(x)
+    plt.plot(x,y, label='f(x)')
+    plt.axhline(0, color='blue', lw=0.5)
+    plt.axvline(0, color='blue', lw=0.5)
+    plt.title(f'Gráfica de f(x) = {funcion.get()}')
+    plt.xlabel('x')
+    plt.ylabel('f(x)')
+    plt.grid()
+    plt.legend()
+    plt.show()
+\end{lstlisting}
+
+\subsection{Implementación del método de regla falsa}
+El núcleo del algoritmo traduce el fundamento matemático a un proceso iterativo. A diferencia de la bisección, este método calcula la aproximación $c$ mediante la intersección de una línea recta con el eje $x$. El código también gestiona la cuantificación de errores para determinar la precisión de la aproximación actual.
+
+\begin{equation}
+    E_{abs} = \abs{c_{actual}- c_{viejo}}
+\end{equation}
+\begin{equation}
+    E_{rel}=\frac{E_{abs}}{\abs{c_{actual}}}
+\end{equation}
+\begin{lstlisting}[language=Python, caption=Algoritmo de Regla Falsa y cálculo de errores]
+    # Implementar el algoritmo de regla falsa aquí
+    while iter_count <= max_iter:
+        #aplicar formula de la posicion falsa
+        c = b - (f(b)*(b-a)) / (f(b)-f(a))
+        
+        if iter_count > 1:
+            error_absoluto = abs(c-c_viejo)
+            error_relativo = error_absoluto / abs(c) if c != 0 else float('inf')
+            
+            err_abs_str = f"{error_absoluto:.6e}"
+            err_rel_str = f"{error_relativo:.6e}"
+            
+        else:
+            err_abs_str = '---'
+            err_rel_str = '---'
+            
+        tabla.insert('', tk.END, values= (iter_count, f"{c:.6e}", err_abs_str, err_rel_str))
+        
+        #si ya estamos cerca de la raiz nos salimos
+        if abs(f(c)) < tol:
+            resultado.config(text=f"La raíz encontrada es: {c:.6e}", fg='green')
+            break 
+        
+        if f(c) * f(a) < 0:
+            b = c 
+        else:
+            a = c 
+            
+        #actualizar el c_viejo para el error del siguiente ciclo
+        c_viejo = c 
+        iter_count += 1
+\end{lstlisting}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{RESULTADOS Y ANÁLISIS}
+\label{sec:4}
+En esta etapa se evaluó el desempeño del software frente a funciones con comportamientos específicos para poner a prueba la precisión del algoritmo y la interfaz gráfica desarrollada.
+
+\subsection{Análisis de convergencia: Caso $x^x-100$}
+Se realizó una prueba utilizando la función $f(x)=x^x-100$, partiendo de un intervalo $[3,4]$ con la tolerancia de $10^{-6}$.
+A diferencia de bisección, el método de regla falsa utiliza la pendiente de la secante para "apuntar" más cerca de la raíz real en cada paso. El programa logró encontrar la raíz aproximada $x=3.597258$ en menor iteraciones que el método de bisección, debido a que aprovecha los valores $f(a)$ y $f(b)$ para ajustar la posición de $c$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{prueba_1.png}
+    \caption{Prueba 1 del método de regla falsa}
+    \label{fig:placeholder}
+\end{figure}
+
+\subsection{Prueba con función trigonométrica: $f(x)=sin(x)$}
+Usando el intervalo $[3,4]$ se busca el valor de $\pi$. Aunque existen infinitas raíces para la función seno, el programa rige estrictamente por el cambio de signo de Bolzano en el intervalo seleccionado, atrapando solo el valor de $\pi$
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{prueba_2.png}
+    \caption{Prueba con la función seno}
+    \label{fig:placeholder}
+\end{figure}
+
+\subsection{Prueba de función con asíntotas}
+Este un caso de error. La función cruza el eje x, pero en $x=2$ hay una discontinuidad, no hay raíz. Es importante observar que el programa al alcanzar el max\_iter o si arroja un error de división por cero al intentar calcular la pendiente de la secante.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{prueba_3.png}
+    \caption{Prueba con asíntotas}
+    \label{fig:placeholder}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{CONCLUSIONES}
+\label{sec:5}
+Se puede concluir que el método de regla falsa es una herramienta superior en comparación con el método de bisección, esto debido a su rapidez para encontrar las raíces. También es muy fiable al momento de encontrar la raíz, pero esto depende de la correcta selección del rango y de que la función sea continua. Al usar una cierta tolerancia protege al sistema de infinitas iteraciones y nos otorga resultados reproducibles.
+
+\section{Referencias}
+\begin{thebibliography}{9}
+\bibitem{chapra} 
+Chapra, S. C., y Canale, R. P. (2015). \textit{Métodos numéricos para ingenieros} (7a ed.). México: McGraw-Hill.
+
+\bibitem{nieves} 
+Nieves, A., y Domínguez, F. C. (2014). \textit{Métodos numéricos aplicados a la ingeniería} (4a ed.). México: Grupo Editorial Patria.
+
+\bibitem{python} 
+Python Software Foundation. (2026). \textit{The Python Tutorial: Floating Point Arithmetic, Issues and Limitations}. Recuperado de https://docs.python.org/3/tutorial/floatingpoint.html
+\end{thebibliography}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{multicols}
+\medline
+\begin{multicols}{2}
+
+    
+\printbibliography
+
+
+\end{multicols}
+\end{document}

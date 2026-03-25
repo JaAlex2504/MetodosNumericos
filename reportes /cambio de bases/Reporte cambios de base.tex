@@ -1,0 +1,142 @@
+\documentclass[11pt,a4paper,twocolumn]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{url}
+\usepackage[spanish]{babel}
+\title{Métodos Numéricos: Cambio de bases}
+\author{Javier Alexander López Contreras}
+
+\begin{document}
+\maketitle
+\section{Introducción}
+El cambio de bases de decimal a binario se ha usado a lo largo de la historia para poder comunicarnos con las computadoras. El binario es un sistema numérico que se basa en la combinación de 2 números (0 y 1) y se usa para dar instrucciones o ingresar datos a una computadora. Por otro lado, el lenguaje octal es una agrupación de 8 números (0 al 7) que se utiliza para poder leer las máquinas, agrupando números binarios de 3 en 3, lo que facilita la lectura del codigo binario.
+
+El objetivo de este reporte es explicar los fundamentos matemáticos que rigen el cambio de base.
+
+\section{Algoritmo y explicación del método}
+El método utilizado es el de \textbf{Divisiones Sucesivas}. La lógica es idéntica para ambas bases, cambiando el divisor, 2 para binario y 8 para octal (n).
+
+\subsection{Metodología}
+\begin{itemize}
+\item Se divide el número decimal entre la base n.
+\item El residuo resultante se convierte en el dígito de la nueva base (se empieza por la derecha).
+\item El cociente de ulitiza para la siguiente división.
+\item El proceso termina cuando el cociente sea 0.
+\end{itemize}
+
+\textbf{EJEMPLO:}
+
+\textbf{A binario:} Se divide sucesivamente entre 2. El resultado es una cadena larga de ceros y unos.
+
+\textbf{A octal:} Se diide sucesivamente entre 8. El proceso es más corto y genera dígitos del 0 al 7.
+
+En lugar de dividir uno por uno de manera manual, aplicaremos una sumatoria de la siguiente forma.
+\begin{equation}
+    N_{10} = \sum_{i=0}^{n-1} d_i \cdot B^i
+\end{equation}
+
+\begin{description}
+    \item[$N_{10}$:] El número resultante en sistema decimal.
+    \item[$d_i$:] El valor del dígito en la posición $i$.
+    \item[$B$:] La base de origen (2 para binario, 8 para octal).
+    \item[$i$:] La posición del dígito (comenzando en 0 desde la derecha).
+    \item[$n$:] La cantidad total de dígitos del número original.
+\end{description}
+\section{Análisis del código}
+
+
+El programa en Python para realizar estas operaciones se llama \texttt{Calculadora\_conversiones.py} y funciona sin bibliotecas externas, lo que demuestra que la aritmética computacional se basa en procesos lógicos finitos
+
+El código comienza con una función principal que gestiona un bucle infinito (\texttt{while True}). Esto garantiza que el programa sea capaz de hacer varias operaciones sin cerrarse. Se incluyó una validación de las opciones para mitigar errores de entrada.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{menu_programa} 
+    \caption{Interfaz del menú del programa.}
+    \label{fig:menu}
+\end{figure}
+
+El programa convierte primero el valor a una representación interna en \texttt{punto flotante.}
+
+\begin{itemize}
+\item Para binario y octal: Se aplica el Teorema Fundamental de la Numeración mediante un ciclo que recorre la parte entera y la parte decimal multiplicando cada digito por $B^i$
+\item Manejo de Fracciones: El código permite la entrada de fracciones, lo cual previene la perdida de información antes de inicial el cálculo.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{gestion_entrada} 
+    \caption{Gestión de datos de entrada.}
+    \label{fig:entrada}
+\end{figure}
+
+Una vez que el número está en la variable num\_decimal, el programa puede transformarlo a cualquier base solicitada mediante el método de \texttt{divisiones sucesivas} para la parte entera y \texttt{multiplicaciones sucesivas} para la parte decimal.
+
+Se observa el uso de round(num\_decimal, 10). Esto es para limpiar el ruido de la precisión que ocurre cuando un número real no puede ser representado \textbf{exactamente} como un número de punto flotante binario.
+
+Para las partes decimales infinitas, se implemento un \textbf{límite de 32 iteraciones} (len(res\_decimal) $<$ 32), haciendo un error de entruncamiento controlado para evitar bucles infinitos en números no exactos.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{reconversion} 
+    \caption{Reconversión de número ingresado.}
+    \label{fig:reconversion}
+\end{figure}
+
+Para finalizar, el código gestiona la terminación del programa y la persistencia de los datos. Permite al usuario decidir si desea realizar una nueva conversión con el mismo valor aprovechando el almacenamiento de la variable num\_decimal o reiniciar el proceso para un nuevo valor.
+
+También asegura que el programa se cierre solo cuando el usuario lo indique mediante la opción de salida.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{salida} 
+    \caption{Pregunta sobre seguir con el proceso de conversión o salir.}
+    \label{fig:salida}
+\end{figure}
+
+\section{Resultados y Análisis}
+
+Al convertir el número decimal 0.1 a binario, observamos que el programa genera una cadena finita de dígitos. Matemáticamente, ese valor tiene un desarrollo infinito, pero debido a la aritmética de punto flotante es finita, el software aplica un \textbf{error de truncamiento} al detenerse en el bit 32, por lo que no todos los números decimales pueden representarse exactamente en la memoria de la computadora
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{error_truncamieno} 
+    \caption{Error de truncamiento por números decimales.}
+    \label{fig:error1}
+\end{figure}
+
+Se ingresó el valor fraccionario $4/3$ para evaluar la precisión del sistema. El programa muestra un resultado de 1.3333333333. Al compararlo con la aritmética real, existe una pérdida de exactitud ya que la computadora solo toma una cantidad limitada de cifras significativas. Esto ocurre por querer representar un número real infinito en un sistema de aritmética computacional finito.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{error_fraccion} 
+    \caption{Error de exactitud por cifras significativas.}
+    \label{fig:error2}
+\end{figure}
+
+\section{Conclusiones}
+
+Mediante el desarrollo de este programa y su experimentación, se ha comprobado de manera práctica que existe una diferencia fundamental entre la aritmética real y la aritmética computacional, debido a que el conjunto de los números de punto flotante es un subconjunto propio y finito de los números reales. Esta naturaleza de la computadora genera una distribución no uniforme de los números en la recta real, concentrándolos cerca del origen y dejando "huecos" que dan pie al error.
+
+Al operar con fracciones como la vista anteriormente, el programa debe aplicar obligatoriamente un error de truncamiento para ajustarse a los bits disponibles, lo que da la perdida de precisión por las cifras significativas. 
+
+Aunque las herramientas digitales son indispensables en muchos ámbitos de la vida, su uso requiere una comprensión muy profunda de las fuentes de error para garantizar que los resultados obtenidos sean satisfactorios y confiables dentro de un entorno de cálculo aproximado.
+
+\begin{thebibliography}{9}
+
+\bibitem{nieves} 
+Nieves, A. y Domínguez, F. C. \textit{Métodos numéricos aplicados a la ingeniería}. México: Grupo Editorial Patria. (Referencia al material de la Unidad 1.2: Aritmética de Punto Flotante y Errores).
+
+\bibitem{ieee754} 
+IEEE Computer Society. \textit{IEEE Standard for Floating-Point Arithmetic (IEEE 754)}. Estándar técnico sobre la representación de números binarios en computadoras.
+
+\bibitem{python} 
+Python Software Foundation. \textit{The Python Tutorial: Floating Point Arithmetic, Issues and Limitations}. Disponible en: \url{https://docs.python.org/3/tutorial/floatingpoint.html}
+
+\bibitem{moler} 
+Moler, C. \textit{Numerical Computing with MATLAB}. Society for Industrial and Applied Mathematics (SIAM). (Fuente de consulta para los conceptos de cancelación catastrófica y precisión finita).
+
+\end{thebibliography}
+ 
+\end{document}
