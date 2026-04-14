@@ -1,120 +1,215 @@
-# Este programa realiza interpolación simple utilizando el método de gauss-jorden para resolver el sistema de ecuaciones lineales generado por los puntos de interpolación.
 import numpy as np
 import tkinter as tk
-from tkinter import messagebox, scrolledtext
-
-# generar ventana
-ventana = tk.Tk()
-ventana.title(
-    "Programa para realizar interpolación simple utilizando el método de gauss-jordan"
-)
-ventana.geometry("600x700")
-
-# lista para almacenar las entradas de la matriz
-entradas_matriz = []
-
-# crear frame para la tabla
-frame_tabla = tk.Frame(ventana)
-frame_tabla.pack(pady=10)
-
-# crear área de texto para mostrar resultados
-resultado_text = scrolledtext.ScrolledText(ventana, width=60, height=10)
-resultado_text.pack(pady=10)
-
-# crear botones
-entry = tk.Entry(ventana, width=20)
-entry.pack(pady=5)
+from tkinter import messagebox, scrolledtext, ttk
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
-def generar_interfaz_matriz():
-    global entradas_matriz
+class InterpoladorUniversal:
+    def __init__(self, ventana):
+        self.ventana = ventana
+        self.ventana.title("Aproximación polinomial simple")
+        self.ventana.geometry("1100x850")
 
-    # limpiar la interfaz de la matriz
-    for widget in frame_tabla.winfo_children():
-        widget.destroy()
-    entradas_matriz = []
+        # Variables de estado
+        self.coeficientes = None
+        self.entradas_x = []
+        self.entradas_y = []
 
-    try:
-        valor_n = entry.get().lower().replace(" ", " ")
-        n = int(valor_n.split("x")[0]) if "x" in valor_n else int(valor_n)
+        self.configurar_estilos()
+        self.crear_interfaz()
 
-        if n < 2:
-            messagebox.showwarning(
-                "Atención", "Los puntos de interpolación deben ser al menos 2."
+    def configurar_estilos(self):
+        style = ttk.Style()
+        style.configure("TButton", padding=5, font=("Arial", 10))
+        style.configure("Header.TLabel", font=("Arial", 12, "bold"))
+
+    def crear_interfaz(self):
+        # --- SECCIÓN SUPERIOR: CONFIGURACIÓN ---
+        frame_top = ttk.Frame(self.ventana, padding=10)
+        frame_top.pack(fill=tk.X)
+
+        ttk.Label(frame_top, text="Número de Puntos (n):", style="Header.TLabel").pack(
+            side=tk.LEFT, padx=5
+        )
+        self.entry_n = ttk.Entry(frame_top, width=8)
+        self.entry_n.pack(side=tk.LEFT, padx=5)
+
+        ttk.Button(frame_top, text="Generar Tabla", command=self.generar_tabla).pack(
+            side=tk.LEFT, padx=10
+        )
+        ttk.Button(
+            frame_top, text="Calcular Polinomio", command=self.ejecutar_calculo
+        ).pack(side=tk.LEFT)
+
+        # --- SECCIÓN CENTRAL: TABLA Y GRÁFICA ---
+        self.frame_main = ttk.Frame(self.ventana, padding=10)
+        self.frame_main.pack(fill=tk.BOTH, expand=True)
+
+        # Sub-frame para la tabla (con scroll)
+        self.frame_datos = ttk.LabelFrame(
+            self.frame_main, text=" Datos Experimentales ", padding=10
+        )
+        self.frame_datos.pack(side=tk.LEFT, fill=tk.Y, padx=5)
+
+        self.canvas_tabla = tk.Canvas(self.frame_datos, width=220)
+        self.scrollbar = ttk.Scrollbar(
+            self.frame_datos, orient="vertical", command=self.canvas_tabla.yview
+        )
+        self.scroll_frame = ttk.Frame(self.canvas_tabla)
+
+        self.scroll_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas_tabla.configure(
+                scrollregion=self.canvas_tabla.bbox("all")
+            ),
+        )
+        self.canvas_tabla.create_window((0, 0), window=self.scroll_frame, anchor="nw")
+        self.canvas_tabla.configure(yscrollcommand=self.scrollbar.set)
+
+        self.canvas_tabla.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Sub-frame para la gráfica
+        self.frame_viz = ttk.LabelFrame(
+            self.frame_main, text=" Visualización Matemática ", padding=10
+        )
+        self.frame_viz.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=5)
+
+        # --- SECCIÓN INFERIOR: RESULTADOS Y PREDICCIÓN ---
+        frame_bottom = ttk.Frame(self.ventana, padding=10)
+        frame_bottom.pack(fill=tk.X)
+
+        # Ecuación y Coeficientes
+        self.txt_output = scrolledtext.ScrolledText(
+            frame_bottom, height=5, font=("Consolas", 10)
+        )
+        self.txt_output.pack(fill=tk.X, pady=5)
+
+        # Herramienta de Predicción
+        self.frame_pred = ttk.LabelFrame(
+            frame_bottom, text=" Herramienta de Predicción (Evaluación) ", padding=10
+        )
+        self.frame_pred.pack(fill=tk.X)
+
+        ttk.Label(self.frame_pred, text="Valor de X a predecir:").pack(
+            side=tk.LEFT, padx=5
+        )
+        self.entry_x_eval = ttk.Entry(self.frame_pred, width=15)
+        self.entry_x_eval.pack(side=tk.LEFT, padx=5)
+
+        ttk.Button(
+            self.frame_pred, text="Calcular Valor f(x)", command=self.predecir
+        ).pack(side=tk.LEFT, padx=10)
+
+        self.lbl_resultado = ttk.Label(
+            self.frame_pred, text="Resultado: ---", font=("Arial", 11, "bold")
+        )
+        self.lbl_resultado.pack(side=tk.LEFT, padx=20)
+
+    def generar_tabla(self):
+        for w in self.scroll_frame.winfo_children():
+            w.destroy()
+        try:
+            n = int(self.entry_n.get())
+            self.entradas_x, self.entradas_y = [], []
+
+            ttk.Label(self.scroll_frame, text="X", font=("Arial", 10, "bold")).grid(
+                row=0, column=0, pady=5
             )
+            ttk.Label(self.scroll_frame, text="f(X)", font=("Arial", 10, "bold")).grid(
+                row=0, column=1, pady=5
+            )
+
+            for i in range(n):
+                ex = ttk.Entry(self.scroll_frame, width=10, justify="center")
+                ey = ttk.Entry(self.scroll_frame, width=10, justify="center")
+                ex.grid(row=i + 1, column=0, padx=5, pady=2)
+                ey.grid(row=i + 1, column=1, padx=5, pady=2)
+                self.entradas_x.append(ex)
+                self.entradas_y.append(ey)
+        except ValueError:
+            messagebox.showerror("Error", "Ingrese un número entero válido para n.")
+
+    def ejecutar_calculo(self):
+        try:
+            x_pts = [float(e.get()) for e in self.entradas_x]
+            y_pts = [float(e.get()) for e in self.entradas_y]
+
+            # Matriz de Vandermonde para ajuste exacto
+            V = np.vander(x_pts, increasing=True)
+            self.coeficientes = np.linalg.solve(V, y_pts)
+
+            self.mostrar_resultados()
+            self.graficar(x_pts, y_pts)
+        except Exception as e:
+            messagebox.showerror("Error", f"Error en el cálculo: {e}")
+
+    def mostrar_resultados(self):
+        self.txt_output.delete(1.0, tk.END)
+        self.txt_output.insert(tk.END, "SISTEMA RESUELTO\n")
+        self.txt_output.insert(tk.END, "-" * 50 + "\n")
+
+        ecuacion = "P(x) = "
+        for i, c in enumerate(self.coeficientes):
+            termino = f"{c:+.6f}"
+            if i > 0:
+                termino += f"*x^{i}"
+            ecuacion += termino + " "
+
+        self.txt_output.insert(tk.END, ecuacion.replace("x^1 ", "x "))
+
+    def predecir(self):
+        if self.coeficientes is None:
+            messagebox.showwarning("Atención", "Primero debe calcular el polinomio.")
             return
+        try:
+            x_val = float(self.entry_x_eval.get())
+            y_val = sum(c * (x_val**i) for i, c in enumerate(self.coeficientes))
+            self.lbl_resultado.config(text=f"f({x_val}) ≈ {y_val:.6f}")
 
-        # encabezados
-        for j in range(n):
-            tk.Label(frame_tabla, text=f"x{j + 1}", font=("Arial", 9, "bold")).grid(
-                row=0, column=j
+            # Actualizar gráfica con el punto predicho
+            self.ax.scatter(
+                x_val, y_val, color="green", s=100, zorder=5, label="Predicción"
             )
-            tk.Label(frame_tabla, text="f(x)", font=("Arial", 9, "bold")).grid(
-                row=0, column=n
-            )
-            for i in range(n):
-                fila = []
-                for j in range(n + 1):
-                    e = tk.Entry(frame_tabla, width=9, justify="center")
-                    e.grid(row=i + 1, column=j, padx=2, pady=2)
-                    fila.append(e)
-                entradas_matriz.append(fila)
-    except ValueError:
-        messagebox.showerror("Error", "Escriba un tamaño válido (ej: 3 o 3x3).")
+            self.ax.legend()
+            self.canvas_viz.draw()
+        except ValueError:
+            messagebox.showerror("Error", "Ingrese un valor numérico válido para X.")
+
+    def graficar(self, x_pts, y_pts):
+        for w in self.frame_viz.winfo_children():
+            w.destroy()
+
+        fig, self.ax = plt.subplots(figsize=(6, 4), dpi=100)
+
+        # Generar curva suave
+        margen = (max(x_pts) - min(x_pts)) * 0.1 if len(x_pts) > 1 else 1
+        x_smooth = np.linspace(min(x_pts) - margen, max(x_pts) + margen, 200)
+        y_smooth = sum(c * (x_smooth**i) for i, c in enumerate(self.coeficientes))
+
+        self.ax.plot(
+            x_smooth, y_smooth, "r-", label="Polinomio Interpolante", alpha=0.7
+        )
+        self.ax.scatter(
+            x_pts,
+            y_pts,
+            color="blue",
+            edgecolor="black",
+            s=50,
+            label="Puntos Originales",
+        )
+
+        self.ax.set_title("Interpolación Polinomial", fontsize=12)
+        self.ax.grid(True, linestyle="--", alpha=0.6)
+        self.ax.legend()
+
+        self.canvas_viz = FigureCanvasTkAgg(fig, master=self.frame_viz)
+        self.canvas_viz.draw()
+        self.canvas_viz.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
 
-def resolver_gauss_jordan():
-    try:
-        n = len(entradas_matriz)
-        tol = 1e-10
-
-        matriz_datos = []
-        for fila_widgets in entradas_matriz:
-            fila_datos = []
-            for widget in fila_widgets:
-                valor_entrada = widget.get()
-                if valor_entrada.strip() == "":
-                    messagebox.showerror(
-                        "Error", "Por favor, complete todas las entradas de la matriz."
-                    )
-                    return
-                try:
-                    valor = float(valor_entrada)
-                    fila_datos.append(valor)
-                except ValueError:
-                    messagebox.showerror(
-                        "Error", "Por favor, ingrese solo números en la matriz."
-                    )
-                    return
-            matriz_datos.append(fila_datos)
-            matriz_datos = np.array(matriz_datos)
-
-            # aplicar el método de gauss-jordan para resolver el sistema de ecuaciones
-            for i in range(n):
-                max_row_index = np.argmax(np.abs(matriz_datos[i:, i])) + i
-                if abs(matriz_datos[max_row_index, i]) < tol:
-                    messagebox.showerror("Error", "El sistema no tiene solución única.")
-                    return
-                matriz_datos[[i, max_row_index]] = matriz_datos[[max_row_index, i]]
-
-                for j in range(i + 1, n):
-                    factor = matriz_datos[j, i] / matriz_datos[i, i]
-                    matriz_datos[j] = matriz_datos[j] - factor * matriz_datos[i]
-
-                    # obtener la solución del sistema de ecuaciones
-                    soluciones = np.zeros(n)
-                    for i in range(n - 1, -1, -1):
-                        soluciones[i] = (
-                            matriz_datos[i, -1]
-                            - np.dot(matriz_datos[i, i + 1 : n], soluciones[i + 1 : n])
-                        ) / matriz_datos[i, i]
-
-                        # mostrar la solución en un cuadro de texto
-                        resultado_text.delete(1.0, tk.END)
-                        resultado_text.insert(tk.END, "Soluciones:\n")
-                        for i in range(n):
-                            resultado_text.insert(
-                                tk.END, f"x{i + 1} = {soluciones[i]:.4f}\n"
-                            )
-    except ValueError:
-        messagebox.showerror("Error", "Escriba un tamaño válido (ej: 3 o 3x3).")
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = InterpoladorUniversal(root)
+    root.mainloop()
