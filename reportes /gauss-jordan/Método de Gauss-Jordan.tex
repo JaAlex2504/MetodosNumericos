@@ -1,0 +1,174 @@
+\documentclass{rmf-d}
+\usepackage{nopageno,multicol,times,epsf,amsmath,amssymb}
+\usepackage[T1]{fontenc} 
+\usepackage[spanish, mexico]{babel}
+\usepackage[]{caption}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{physics}
+\usepackage{float}
+\usepackage[hidelinks]{hyperref}
+
+% Configuración de colores para el código (idéntica a tu referencia)
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,1}
+
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},   
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breakatwhitespace=false,         
+  breaklines=true,                 
+  captionpos=b,                    
+  keepspaces=true,                 
+  numbers=left,                    
+  numbersep=5pt,                  
+  showspaces=false,                
+  showstringspaces=false,
+  showtabs=false,                  
+  tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\spanishdecimal{.}
+\def\rmfcornisa{Métodos numéricos \hfill Cuarto Semestre \hfill Marzo 2026}
+\def\rmfcintilla{{\it Facultad de Ciencias Físico Matemáticas\/}}
+
+\begin{document}
+
+\title{Método de Eliminación de Gauss-Jordan\vspace{-6pt}}
+\author{Javier Alexander López Contreras}
+
+\address{Facultad de Ciencias Físico Matemáticas (FCFM), Universidad Autónoma de Coahuila, Campus Campo Redondo}
+
+\maketitle
+
+\begin{center}
+\recibido{28/03/2026\vspace{-10pt}}
+\end{center}
+
+\begin{abstract}
+En este documento se analizará el método de Gauss-Jordan para la resolución de sistemas de ecuaciones lineales de $n \times n$, utilizando una implementación en Python con una interfaz gráfica desarrollada en la librería Tkinter.
+\end{abstract}
+
+\begin{multicols}{2}
+
+\section{INTRODUCCIÓN}
+\label{sec:1}
+El método de Gauss-Jordan es una variación de la eliminación gaussiana que permite hallar la solución de un sistema de ecuaciones lineales $Ax = B$ transformando la matriz de coeficientes en una matriz identidad. A diferencia de la eliminación simple, este algoritmo elimina los elementos tanto por encima como por debajo del pivote, permitiendo obtener el valor de las incógnitas de forma directa sin necesidad de sustitución hacia atrás.
+
+\section{ALGORITMO Y EXPLICACIÓN DEL MÉTODO}
+\label{sec:2}
+El fundamento del método es aplicar operaciones elementales de fila sobre la matriz aumentada $[A|B]$ hasta alcanzar la forma escalonada reducida:
+\begin{itemize}
+    \item \textbf{Pivoteo parcial:} Se busca el elemento de mayor valor absoluto en la columna actual para intercambiar filas, lo que minimiza el error de redondeo.
+    \item \textbf{Normalización:} Se divide la fila del pivote entre el valor del pivote ($M_{j,j}$) para que el elemento principal sea igual a 1.
+    \item \textbf{Eliminación Gaussiana:} Para cada fila $i \neq j$, se realiza la operación:
+    \begin{equation}
+        R_i = R_i - (M_{i,j} \cdot R_j)
+    \end{equation}
+    \item El proceso finaliza cuando la matriz original $A$ se ha convertido en la identidad $I$, dejando el vector solución en la última columna de la matriz aumentada.
+\end{itemize}
+
+\section{ANÁLISIS DEL CÓDIGO}
+\label{sec:3}
+La implementación en Python utiliza \textbf{numpy} para el manejo de matrices y \textbf{tkinter} para la interfaz de usuario.
+
+\subsection{Configuración de la interfaz y entrada}
+El programa permite definir dinámicamente el tamaño de la matriz. Se utiliza un arreglo de objetos \texttt{Entry} para capturar los coeficientes.
+\begin{lstlisting}[language=Python, caption={Generación dinámica de la matriz de entrada.}]
+def generar_interfaz_matriz():
+    n = int(entry_n.get().split('x')[0])
+    for i in range(n):
+        fila = []
+        for j in range(n + 1):
+            e = tk.Entry(frame_tabla, width=9)
+            e.grid(row=i+1, column=j)
+            fila.append(e)
+        entradas_matriz.append(fila)
+\end{lstlisting}
+
+\subsection{Proceso de solución}
+El núcleo del programa implementa el pivoteo parcial y la reducción de la matriz. Se incluye una tolerancia (\texttt{tol}) para detectar sistemas sin solución única.
+
+\begin{lstlisting}[language=Python, caption={Lógica de Gauss-Jordan con pivoteo parcial.}]
+for j in range(n):
+    # Seleccion del pivote maximo
+    fila_pivote = np.argmax(abs(M[j:n, j])) + j
+    if abs(M[fila_pivote, j]) < 1e-10:
+        return # Sin solucion unica
+    
+    # Intercambio y normalizacion
+    M[[j, fila_pivote]] = M[[fila_pivote, j]]
+    M[j] = M[j] / M[j, j]
+    
+    # Eliminacion en otras filas
+    for i in range(n):
+        if i != j:
+            M[i] = M[i] - M[i, j] * M[j]
+\end{lstlisting}
+
+\section{RESULTADOS Y ANÁLISIS}
+\label{sec:4}
+Se realizaron pruebas con sistemas de diferentes dimensiones para validar la estabilidad de la aritmética de punto flotante.
+
+\subsection{Sistema con solución única (Matriz 3x3)}
+Para verificar la precisión del algoritmo, se introdujo un sistema de 3x3 con una solución conodia.
+\begin{itemize}
+    \item \textbf{Resultado del programa:} El software aplicó el pivoteo parcial intercambiando filas para maximizar el valor del pivote y entregó los valores $x_1 = 2.0000, x_2=3.0000$ y $x_3=-1.000$
+    \item \textbf{Análisis:} El programa transformó con éxito la matriz original en una matriz identidad. Al comparar con la solución teórica, el error es inexistente, lo que valida que la lógica de normalización y eliminación por renglones sea correcta.
+\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{prueba1.png}
+    \caption{Prueba con sistema 3x3 con solución única}
+    \label{fig:placeholder}
+\end{figure}
+
+
+\subsection{Estabilidad ante sistemas mal condicionados}
+Se aprobó el programa con un sistema donde las ecuaciones son casi paralelas, lo que suele causar errores de redondeo en computadoras con aritmética de precisión limitada.
+\begin{itemize}
+    \item \textbf{Resultado del programa:} El código resolvió el sistema obteniendo $x_1=1.0000$ y $x_2= 1.0000$
+    \item \textbf{Análisis:} Aunque la diferencia entre coeficientes es de apenas $10^{-4}$, el uso de la librería \textit{numpy} para el almacenamiento de datos en punto flotante de 64 bits permitió mantener la precisión necesaria sin que el error se propagara de forma significativa.
+\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{prueba2.png}
+    \caption{Resolución de ecuaciones con pendientes similares sin pérdida de precisión.}
+    \label{fig:placeholder}
+\end{figure}
+
+\subsection{Identificación de matrices singulares (Sin solución)}
+Se puso a prueba la robustez del programa ingresando un sistema donde una de las ecuaciones es una combinación lineal de las otras, lo que resulta en una matriz de determinante 0.
+\begin{itemize}
+    \item \textbf{Resultado del programa:} Tras las primeras iteraciones, el programa identificó que el pivote disponible era menor a la tolerancia de $1e-10$ y mostró el aviso: "El sistema no tiene una solución única.
+    \item \textbf{Análisis:} Este resultado es crucial, ya que matemáticamente el sistema es dependiente (los tres planos nos se cortan en un punto único). El programa evita realizar divisiones entre 0, lo que previene el cierre inesperado de la aplicación y garantiza un manejo de errores adecuado para el usuario.
+\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{prueba3.png}
+    \caption{Identificación de la falta de solución única mediante la tolerancia establecida.}
+    \label{fig:placeholder}
+\end{figure}
+
+\section{CONCLUSIONES}
+\label{sec:5}
+Tras la implementación, se concluye que Gauss-Jordan es un método robusto para sistemas de tamaño moderado. Aunque es computacionalmente más costoso que la eliminación gaussiana simple (aproximadamente un 50\% más de operaciones), su capacidad para entregar la solución directa y facilitar el cálculo de la matriz inversa lo hace indispensable en la ingeniería.
+
+\section{REFERENCIAS}
+\begin{thebibliography}{9}
+\bibitem{nieves2014} Nieves, A. y Domínguez, F. C. (2014). \textit{Métodos numéricos aplicados a la ingeniería}. México: Grupo Editorial Patria.
+\bibitem{chapra2015} Chapra, S. C. y Canale, R. P. (2015). \textit{Métodos numéricos para ingenieros}. México: McGraw-Hill.
+\bibitem{python2026} Python Software Foundation. (2026). \textit{Floating Point Arithmetic Issues}.
+\end{thebibliography}
+
+\end{multicols}
+\end{document}
