@@ -17,6 +17,7 @@ class InterpoladorUniversal:
         self.coeficientes = None
         self.entradas_x = []
         self.entradas_y = []
+        self.punto_prediccion = None  # Variable para rastrear el punto verde
 
         self.configurar_estilos()
         self.crear_interfaz()
@@ -42,7 +43,7 @@ class InterpoladorUniversal:
         )
         ttk.Button(
             frame_top, text="Calcular Polinomio", command=self.ejecutar_calculo
-        ).pack(side=tk.LEFT)
+        ).pack(side=tk.LEFT, padx=10)
 
         # SECCIÓN CENTRAL: TABLA Y GRÁFICA
         self.frame_main = ttk.Frame(self.ventana, padding=10)
@@ -165,17 +166,28 @@ class InterpoladorUniversal:
         if self.coeficientes is None:
             messagebox.showwarning("Atención", "Primero debe calcular el polinomio.")
             return
+
         try:
             x_val = float(self.entry_x_eval.get())
             y_val = sum(c * (x_val**i) for i, c in enumerate(self.coeficientes))
             self.lbl_resultado.config(text=f"f({x_val}) ≈ {y_val:.6f}")
 
-            # Actualizar gráfica con el punto predicho
-            self.ax.scatter(
+            # 1. Borramos el punto anterior (si existe)
+            if (
+                self.punto_prediccion is not None
+                and self.punto_prediccion in self.ax.collections
+            ):
+                self.punto_prediccion.remove()
+
+            # 2. Dibujamos el nuevo punto y GUARDAMOS su referencia
+            self.punto_prediccion = self.ax.scatter(
                 x_val, y_val, color="green", s=100, zorder=5, label="Predicción"
             )
+
+            # Actualizamos la leyenda y el dibujo
             self.ax.legend()
             self.canvas_viz.draw()
+
         except ValueError:
             messagebox.showerror("Error", "Ingrese un valor numérico válido para X.")
 
@@ -184,6 +196,9 @@ class InterpoladorUniversal:
             w.destroy()
 
         fig, self.ax = plt.subplots(figsize=(6, 4), dpi=100)
+
+        # Al crear una gráfica nueva, reseteamos la referencia del punto verde
+        self.punto_prediccion = None
 
         # Generar curva suave
         margen = (max(x_pts) - min(x_pts)) * 0.1 if len(x_pts) > 1 else 1
