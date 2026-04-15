@@ -8,7 +8,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 class InterpoladorUniversal:
     def __init__(self, ventana):
         self.ventana = ventana
-        self.ventana.title("Aproximación polinomial simple")
+        self.ventana.title(
+            "Programa que realiza aproximación polinomial a través de interpolación"
+        )
         self.ventana.geometry("1100x850")
 
         # Variables de estado
@@ -25,7 +27,7 @@ class InterpoladorUniversal:
         style.configure("Header.TLabel", font=("Arial", 12, "bold"))
 
     def crear_interfaz(self):
-        # --- SECCIÓN SUPERIOR: CONFIGURACIÓN ---
+        # SECCIÓN SUPERIOR: CONFIGURACIÓN Y CONTROLES
         frame_top = ttk.Frame(self.ventana, padding=10)
         frame_top.pack(fill=tk.X)
 
@@ -42,7 +44,7 @@ class InterpoladorUniversal:
             frame_top, text="Calcular Polinomio", command=self.ejecutar_calculo
         ).pack(side=tk.LEFT)
 
-        # --- SECCIÓN CENTRAL: TABLA Y GRÁFICA ---
+        # SECCIÓN CENTRAL: TABLA Y GRÁFICA
         self.frame_main = ttk.Frame(self.ventana, padding=10)
         self.frame_main.pack(fill=tk.BOTH, expand=True)
 
